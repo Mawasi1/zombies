@@ -5,11 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         :root {
-            --primary-bg: #f0f4ff;  /* Lighter background */
+            --primary-bg: #f0f7ff;
             --card-bg: rgba(255, 255, 255, 0.95);
-            --gradient-1: rgba(37, 99, 235, 0.2);  /* Bright blue */
-            --gradient-2: rgba(236, 72, 153, 0.2); /* Bright pink */
-            --gradient-3: rgba(34, 197, 94, 0.2);  /* Bright green */
+            --blue-light: rgba(56, 189, 248, 0.2);
+            --blue-medium: rgba(37, 99, 235, 0.15);
+            --blue-dark: rgba(29, 78, 216, 0.1);
             --text-primary: #1e293b;
             --text-secondary: #475569;
             --accent-blue: #3b82f6;
@@ -37,8 +37,7 @@
         }
 
         /* Dynamic Background */
-        body::before,
-        body::after {
+        body::before {
             content: '';
             position: fixed;
             top: 0;
@@ -46,21 +45,27 @@
             width: 100vw;
             height: 100vh;
             z-index: -1;
-        }
-
-        body::before {
             background: 
-                radial-gradient(circle at 20% 30%, var(--gradient-1) 0%, transparent 50%),
-                radial-gradient(circle at 80% 70%, var(--gradient-2) 0%, transparent 50%),
-                radial-gradient(circle at 50% 50%, var(--gradient-3) 0%, transparent 50%);
+                radial-gradient(circle at 20% 30%, var(--blue-light) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, var(--blue-medium) 0%, transparent 50%),
+                radial-gradient(circle at 50% 50%, var(--blue-dark) 0%, transparent 50%);
             filter: blur(40px);
-            animation: gradientMove 20s linear infinite;
+            animation: blueWaves 15s ease-in-out infinite alternate;
         }
 
-        @keyframes gradientMove {
-            0% { transform: translate(0, 0) rotate(0deg); }
-            50% { transform: translate(-2%, 2%) rotate(180deg); }
-            100% { transform: translate(0, 0) rotate(360deg); }
+        @keyframes blueWaves {
+            0% {
+                transform: translate(0, 0) rotate(0deg);
+                background-position: 0% 50%;
+            }
+            50% {
+                transform: translate(-2%, 2%) rotate(180deg);
+                background-position: 100% 50%;
+            }
+            100% {
+                transform: translate(0, 0) rotate(360deg);
+                background-position: 0% 50%;
+            }
         }
 
         h1 {
@@ -113,13 +118,15 @@
 
         /* Variable Display */
         .variable-display {
-            background: var(--card-bg);
+            background: linear-gradient(135deg, 
+                rgba(255, 255, 255, 0.95), 
+                rgba(240, 247, 255, 0.95));
             padding: 30px;
             border-radius: 16px;
             margin: 20px 0;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
             backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 255, 255, 0.4);
+            border: 1px solid rgba(59, 130, 246, 0.1);
         }
 
         .variable-display h3 {
@@ -142,6 +149,14 @@
             border-radius: 16px;
             box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
             transition: all 0.3s ease;
+        }
+
+        .variable-item:hover {
+            background: linear-gradient(135deg, 
+                white, 
+                rgba(240, 247, 255, 0.8));
+            transform: translateY(-3px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
         }
 
         .variable-item.active {
@@ -221,13 +236,15 @@
 
         /* Results Section */
         .results {
-            background: var(--card-bg);
+            background: linear-gradient(135deg, 
+                rgba(255, 255, 255, 0.95), 
+                rgba(240, 247, 255, 0.95));
             padding: 30px;
             border-radius: 16px;
             margin-top: 30px;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
             backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 255, 255, 0.4);
+            border: 1px solid rgba(59, 130, 246, 0.1);
         }
 
         .results h3 {
@@ -255,6 +272,9 @@
         .result-item:hover {
             transform: translateY(-2px);
             box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+            background: linear-gradient(135deg, 
+                white, 
+                rgba(240, 247, 255, 0.8));
         }
 
         .result-label {
@@ -292,6 +312,7 @@
             color: #999;
         }
 
+        /* Responsive Design */
         @media (max-width: 600px) {
             body { 
                 padding: 10px; 
@@ -319,7 +340,7 @@
     </style>
 </head>
 <body>
-    <h1>حاسبة القيم بالصور</h1>
+    <h1>حاسبة الالغاز</h1>
     
     <div class="instruction">
         اختر قيمة للمتغير: <span id="current-var" style="font-weight: bold; color: #007bff;">X</span>
@@ -411,11 +432,16 @@
         }
 
         function selectNextVariable() {
+            // Circular pattern: x -> y -> z -> x
             if (selectedVariable === 'x') {
                 selectedVariable = 'y';
             } else if (selectedVariable === 'y') {
                 selectedVariable = 'z';
+            } else if (selectedVariable === 'z') {
+                selectedVariable = 'x';  // Going back to x instead of staying at z
             }
+            
+            // Update button states
             document.querySelectorAll('.variable-btn').forEach(btn => {
                 btn.classList.remove('active');
                 if (btn.textContent === selectedVariable.toUpperCase()) {
@@ -451,9 +477,8 @@
             
             updateDisplay();
             
-            if (selectedVariable !== 'z') {
-                selectNextVariable();
-            }
+            // Always move to next variable, creating a circular pattern
+            selectNextVariable();
         }
 
         function updateDisplay() {
